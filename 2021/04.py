@@ -18,18 +18,7 @@ def remaining(board):
     board = list(filter(lambda x: x != -1, board))
     return board
         
-def part1():
-    for n in nums:
-        for b in boards:
-            for i in range(len(b)):
-                if b[i] == n:
-                    b[i] = -1
-        
-            if check_winning_board(b):
-                print("part1:", n * sum(remaining(b)))
-                return
-
-def part2():
+def part1_and_2():
     finished = [] 
     for n in nums:
         for b_i in range(len(boards)):
@@ -44,8 +33,9 @@ def part2():
             if check_winning_board(b):
                 finished.append((b_i, n * sum(remaining(b))))
 
-    res = finished[-1][1]
-    print("part2:", res)
+    part1 = finished[0][1]
+    part2 = finished[-1][1]
+    print("part1:", part1)
+    print("part2:", part2)
 
-part1()
-part2()
+part1_and_2()
