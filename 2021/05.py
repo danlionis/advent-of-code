@@ -30,7 +30,7 @@ def get_points(xy):
         else:
             ys = range(y1, y2 - 1, -1)
 
-        print(xy, list(xs), list(ys))
+        # print(xy, list(xs), list(ys))
 
         res.extend(zip(xs, ys))
 
@@ -67,7 +67,7 @@ def part2():
 
     for l in ls:
         points = get_points(l)
-        print(l, points)
+        # print(l, points)
         for p in points:
             coords[p] += 1
 
