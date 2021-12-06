@@ -26,10 +26,10 @@ def simulate(state, rounds):
     for i in range(rounds):
         new = ds[0]
 
-        for i in range(9):
+        for i in range(8):
             ds[i] = ds[i+1]
 
-        ds[8] += new
+        ds[8] = new
         ds[6] += new
 
     return sum(ds.values())
