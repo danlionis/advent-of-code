@@ -1,9 +1,7 @@
 import sys
-from itertools import repeat
-from collections import defaultdict
 import numpy as np
 
-state_list = list(map(int, sys.stdin.readline().split(",")))
+initial = list(map(int, sys.stdin.readline().split(",")))
 
 '''
 # old solution
@@ -17,22 +15,20 @@ def part1(state):
     print("part1", len(state))
 '''
 
-def simulate(state, rounds):
+def simulate(state, days):
 
-    ds = defaultdict(lambda: 0)
+    ds = [0] * 9
     for s in state:
         ds[s] += 1
 
-    for i in range(rounds):
+    for i in range(days):
         new = ds[0]
-
-        for i in range(8):
-            ds[i] = ds[i+1]
-
+        ds[0:8] = ds[1:9]
         ds[8] = new
         ds[6] += new
 
-    return sum(ds.values())
+    return sum(ds)
 
-print("part1:", simulate(state_list, 80))
-print("part2:", simulate(state_list, 256))
+print("part1:", simulate(initial, 80))
+print("part2:", simulate(initial, 256))
+# print("part3:", simulate(initial, 100000))
