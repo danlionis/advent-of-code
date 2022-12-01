@@ -7,11 +7,13 @@ nums = list(map(int, sys.stdin.readline().strip().split(",")))
 # boards = list(map(lambda x: list(map(lambda y: list(map(int, re.split(r"\s+", y.strip()))), x.split("\n"))), sys.stdin.read().strip().split("\n\n")))
 boards = list(map(lambda x: list(map(int, re.split(r"\s+", x.replace("\n", " ").strip()))), sys.stdin.read().strip().split("\n\n")))
 
+print(boards)
+
 def check_winning_board(board):
     board = np.array(board)
     board = np.array(np.split(board, 5))
-    winning = any(all(e == -1 for e in l) for l in board)
-    winning |= any(all(e == -1 for e in l) for l in board.T)
+    winning = any(all(e == -1 for e in line) for line in board)
+    winning |= any(all(e == -1 for e in column) for column in board.T)
     return winning
 
 def remaining(board):

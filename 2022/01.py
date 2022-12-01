@@ -1,11 +1,9 @@
 import sys
 
-nums = sys.stdin.read()
+elves = sys.stdin.read()
+elves = [sum(map(int, x.strip().split("\n"))) for x in elves.split("\n\n")]
+elves = sorted(elves)
 
-nums = [sum(map(int, x.strip().split("\n"))) for x in nums.split("\n\n")]
+print("part1: ", max(elves))
+print("part2: ", sum(elves[-3:]))
 
-
-nums = sorted(nums)
-print("part1: ", max(nums))
-
-print("part2: ", sum(nums[-3:]))

@@ -2,6 +2,10 @@ import sys
 import numpy as np
 from functools import reduce
 
+# left shift or
+def lsor(a, b):
+    return a << 1 | b
+
 nums = np.array(list(map(lambda x: list(map(int, x.strip())), sys.stdin)))
 mid = len(nums) / 2
 
@@ -13,12 +17,14 @@ epsilon = reduce(lambda a, b: a << 1 | b, map(lambda x: 0 if x > mid else 1, cou
 
 print("part1:", gamma * epsilon)
 
+sums = [sum(map(lambda y: 1 if y == 0 else -1, x)) for x in nums.T]
+sums = [len(nums) - 2 * sum(x) for x in nums.T]
+gamma = [int(x >= 0) for x in sums]
+epsil = [int(x < 0) for x in sums]
+gamma = reduce(lsor, gamma)
+epsil = reduce(lsor, epsil)
 
-
-
-
-
-# most common bit at each position
+print("part1:", gamma * epsil)
 
 
 filtered = nums 
@@ -33,7 +39,7 @@ for i in range(len(nums.T)):
     l = filter(lambda x: x[i] == common, filtered)
     filtered = np.array(list(l))
 
-oxygen = reduce(lambda a, b: a << 1 | b, filtered[0])
+oxygen = reduce(lsor, filtered[0])
 
 filtered = nums 
 for i in range(len(nums.T)):
@@ -46,6 +52,6 @@ for i in range(len(nums.T)):
     l = filter(lambda x: x[i] != common, filtered)
     filtered = np.array(list(l))
 
-co2 = reduce(lambda a, b: a << 1 | b, filtered[0])
+co2 = reduce(lsor, filtered[0])
 
 print("part2:", co2 * oxygen)
