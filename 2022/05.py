@@ -13,20 +13,19 @@
 import sys
 from copy import deepcopy
 
-moves = [x.split() for x in sys.stdin.readlines()]
-moves = [list(map(int, [x[1], x[3], x[5]])) for x in moves]
+moves = [list(map(int, x.split()[1::2])) for x in sys.stdin.readlines()]
 
-crates = [
-    list("ZJNWPS"),
-    list("GST"),
-    list("VQRLH"),
-    list("VSTD"),
-    list("QZTDBMJ"),
-    list("MWTJDCZL"),
-    list("LPMWGTJ"),
-    list("NGMTBFQH"),
-    list("RDGCPBQW"),
-]
+crates = list(map(list, [
+    "ZJNWPS",
+    "GST",
+    "VQRLH",
+    "VSTD",
+    "QZTDBMJ",
+    "MWTJDCZL",
+    "LPMWGTJ",
+    "NGMTBFQH",
+    "RDGCPBQW",
+]))
 
 part1 = deepcopy(crates)
 
