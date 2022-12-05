@@ -11,12 +11,12 @@
 '''
 
 import sys
+from copy import deepcopy
 
 moves = [x.split() for x in sys.stdin.readlines()]
 moves = [list(map(int, [x[1], x[3], x[5]])) for x in moves]
-print(moves)
 
-part1 = [
+crates = [
     list("ZJNWPS"),
     list("GST"),
     list("VQRLH"),
@@ -27,6 +27,8 @@ part1 = [
     list("NGMTBFQH"),
     list("RDGCPBQW"),
 ]
+
+part1 = deepcopy(crates)
 
 for m in moves:
     amount, move_from, move_to = m
@@ -35,30 +37,15 @@ for m in moves:
         tmp = part1[move_from-1].pop()
         part1[move_to-1].append(tmp)
 
+print("part1:", "".join(list(map(lambda stack: stack[-1], part1))))
 
-print("part1:", "".join(list(map(lambda x: x[-1], part1))))
 
-part2 = [
-    list("ZJNWPS"),
-    list("GST"),
-    list("VQRLH"),
-    list("VSTD"),
-    list("QZTDBMJ"),
-    list("MWTJDCZL"),
-    list("LPMWGTJ"),
-    list("NGMTBFQH"),
-    list("RDGCPBQW"),
-]
+part2 = deepcopy(crates)
 
 for m in moves:
     amount, move_from, move_to = m
 
-    tmp = []
-    for a in range(amount):
-        tmp.append(part2[move_from-1].pop())
-
-    tmp.reverse()
-    for t in tmp: 
-        part2[move_to-1].append(t)
+    part2[move_to-1].extend(part2[move_from-1][-amount:])
+    part2[move_from-1] = part2[move_from-1][:-amount]
 
 print("part2:", "".join(list(map(lambda x: x[-1], part2))))
