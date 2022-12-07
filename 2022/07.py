@@ -7,20 +7,13 @@ directories = defaultdict(lambda: [])
 current_dir = []
 
 for l in lines:
-    if l.startswith("$ cd"):
-        _, dir = l.rsplit(" ", 1)
-        if dir == "/":
-            current_dir = ["root"]
-        elif dir == "..":
-            current_dir.pop()
-        else:
-            current_dir.append(dir)
-    elif l.startswith("$ ls"):
-        pass
-    else:
-        size, name = l.split()
-        if size != "dir":
-            directories["/".join(current_dir)].append((name, int(size)))
+    match l.split():
+        case "$", "cd", "..": current_dir.pop()
+        case "$", "cd", "/": current_dir = ["root"]
+        case "$", "cd", d: current_dir.append(d)
+        case "$", "ls": pass
+        case "dir", _: pass
+        case size, name:  directories["/".join(current_dir)].append((name, int(size)))
 
 part1 = defaultdict(lambda: 0)
 
