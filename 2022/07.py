@@ -13,21 +13,19 @@ for l in lines:
         case "$", "cd", d: current_dir.append(d)
         case "$", "ls": pass
         case "dir", _: pass
-        case size, name:  directories["/".join(current_dir)].append((name, int(size)))
+        case size, name:  directories["/".join(current_dir)].append(int(size))
 
 part1 = defaultdict(lambda: 0)
 
-for key, v in directories.items():
-    s = sum([x[1] for x in v])
-    parts = key.split("/")
+for file_name, sizes in directories.items():
+    parts = file_name.split("/")
     for i in range(len(parts)):
-        ps = "/".join(parts[:i + 1])
-        part1[ps] += s
+        directory_prefix = "/".join(parts[:i + 1])
+        part1[directory_prefix] += sum(sizes)
 
-print("part1", sum([x for x in part1.values() if x <= 100000]))
+print("part1:", sum(x for x in part1.values() if x <= 100000))
 
 unused = 70000000 - part1["root"]
 needed = 30000000 - unused
 
-res = min(filter(lambda x: x >= needed, part1.values()))
-print("part2:", res)
+print("part2:", min(x for x in part1.values() if x >= needed))
