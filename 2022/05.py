@@ -16,7 +16,6 @@ part2 = deepcopy(crates)
 x = len(moves)
 i = 0
 for m in moves:
-    print(i, x,  m)
     i += 1
     amount, move_from, move_to = m
 

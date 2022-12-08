@@ -4,6 +4,7 @@ from collections import defaultdict
 lines = sys.stdin.read().strip().split("\n")
 
 directories = defaultdict(lambda: [])
+
 current_dir = []
 
 for l in lines:
@@ -14,6 +15,10 @@ for l in lines:
         case "$", "ls": pass
         case "dir", _: pass
         case size, name:  directories["/".join(current_dir)].append(int(size))
+
+for k, v in directories.items():
+    print(k, v)
+
 
 part1 = defaultdict(lambda: 0)
 

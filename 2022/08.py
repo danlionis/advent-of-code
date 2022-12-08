@@ -7,8 +7,10 @@ trees = [[int(tree) for tree in treeline]
 len_y = len(trees)
 len_x = len(trees[0])
 
+
 def get_horizontal_line(trees, y):
     return trees[y]
+
 
 def get_vertical_line(trees, x):
     return [line[x] for line in trees]
@@ -16,38 +18,39 @@ def get_vertical_line(trees, x):
 
 # ------------- PART 1 -----------------
 
-part1 = [[False] * len_x for _ in range(len_y)]
-
-def get_visible_mask(tree_list):
-    last = -1
-    mask = []
-
-    for tree in tree_list:
-        mask.append(tree > last)
-        last = max(last, tree)
-
-    return mask
-            
-
+part1 = set()
 
 for y in range(len_y):
-    line = get_horizontal_line(trees, y)
-    mask_left = get_visible_mask(line)
-    mask_right = get_visible_mask(line[::-1])[::-1]
-    mask = [a or b for a, b, in zip(mask_left, mask_right)]
-    part1[y] = [a or b for a, b in zip(mask_left, part1[y])]
-    part1[y] = [a or b for a, b in zip(mask_right, part1[y])]
+    last_left = -1
+    last_right = -1
+
+    for x in range(len_x):
+        tree_left = trees[y][x]
+        if tree_left > last_left:
+            part1.add((x, y))
+            last_left = tree_left
+
+        tree_right = trees[y][len_x - x - 1]
+        if tree_right > last_right:
+            part1.add((len_x - x - 1, y))
+            last_right = tree_right
 
 for x in range(len_x):
-    line = get_vertical_line(trees, x)
-    mask_left = get_visible_mask(line)
-    mask_right = get_visible_mask(line[::-1])[::-1]
-    mask = [a or b for a, b, in zip(mask_left, mask_right)]
+    last_left = -1
+    last_right = -1
 
-    for y in range(len_y): 
-        part1[y][x] = mask[y] or part1[y][x]
+    for y in range(len_y):
+        tree_left = trees[y][x]
+        if tree_left > last_left:
+            part1.add((x, y))
+            last_left = tree_left
 
-part1 = [visible for line in part1 for visible in line if visible]
+        tree_right = trees[-(y + 1)][x]
+        if tree_right > last_right:
+            part1.add((x, len_y - y - 1))
+            last_right = tree_right
+
+
 print("part1:", len(part1))
 
 
@@ -66,13 +69,16 @@ part2 = [[0] * len_x for _ in range(len_y)]
 
 for y in range(1, len_y - 1):
     for x in range(1, len_x - 1):
-        tree = trees[y][x]
+        tree_left = trees[y][x]
 
-        top = distance_visible(tree, get_vertical_line(trees, x)[:y][::-1])
-        down = distance_visible(tree, get_vertical_line(trees, x)[y + 1:])
+        top = distance_visible(
+            tree_left, get_vertical_line(trees, x)[:y][::-1])
+        down = distance_visible(tree_left, get_vertical_line(trees, x)[y + 1:])
 
-        right = distance_visible(tree, get_horizontal_line(trees, y)[x + 1:])
-        left = distance_visible(tree, get_horizontal_line(trees, y)[:x][::-1])
+        right = distance_visible(
+            tree_left, get_horizontal_line(trees, y)[x + 1:])
+        left = distance_visible(
+            tree_left, get_horizontal_line(trees, y)[:x][::-1])
 
         views = [top, down, right, left]
         score = functools.reduce(lambda x, y: x * y, views)
