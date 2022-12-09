@@ -18,43 +18,26 @@ def get_vertical_line(trees, x):
 
 # ------------- PART 1 -----------------
 
-part1 = set()
 
-for y in range(len_y):
-    last_left = -1
-    last_right = -1
+part1 = 0
+for r in range(len(trees)):
+    for c in range(len(trees[0])):
+        tree = trees[r][c]
+        vertical = get_vertical_line(trees, c)
+        horizontal = get_horizontal_line(trees, r)
 
-    for x in range(len_x):
-        tree_left = trees[y][x]
-        if tree_left > last_left:
-            part1.add((x, y))
-            last_left = tree_left
+        left = all([x < tree for x in horizontal[:c]])
+        right = all([x < tree for x in horizontal[c+1:]])
+        top = all([x < tree for x in vertical[:r]])
+        bottom = all([x < tree for x in vertical[r+1:]])
 
-        tree_right = trees[y][len_x - x - 1]
-        if tree_right > last_right:
-            part1.add((len_x - x - 1, y))
-            last_right = tree_right
+        if any([left, right, top, bottom]):
+            part1 += 1
 
-for x in range(len_x):
-    last_left = -1
-    last_right = -1
-
-    for y in range(len_y):
-        tree_left = trees[y][x]
-        if tree_left > last_left:
-            part1.add((x, y))
-            last_left = tree_left
-
-        tree_right = trees[-(y + 1)][x]
-        if tree_right > last_right:
-            part1.add((x, len_y - y - 1))
-            last_right = tree_right
-
-
-print("part1:", len(part1))
-
+print("part1", part1)
 
 # ------------- PART 2 -----------------
+
 
 def distance_visible(self_height, tree_list: list[int]):
     try:
@@ -67,22 +50,20 @@ def distance_visible(self_height, tree_list: list[int]):
 
 part2 = [[0] * len_x for _ in range(len_y)]
 
-for y in range(1, len_y - 1):
-    for x in range(1, len_x - 1):
-        tree_left = trees[y][x]
+for r in range(len_y):
+    for c in range(len_x):
+        tree_left = trees[r][c]
 
         top = distance_visible(
-            tree_left, get_vertical_line(trees, x)[:y][::-1])
-        down = distance_visible(tree_left, get_vertical_line(trees, x)[y + 1:])
+            tree_left, get_vertical_line(trees, c)[:r][::-1])
+        down = distance_visible(tree_left, get_vertical_line(trees, c)[r + 1:])
 
         right = distance_visible(
-            tree_left, get_horizontal_line(trees, y)[x + 1:])
+            tree_left, get_horizontal_line(trees, r)[c + 1:])
         left = distance_visible(
-            tree_left, get_horizontal_line(trees, y)[:x][::-1])
+            tree_left, get_horizontal_line(trees, r)[:c][::-1])
 
-        views = [top, down, right, left]
-        score = functools.reduce(lambda x, y: x * y, views)
-        part2[y][x] = score
+        part2[r][c] = top * down * right * left
 
 part2 = [max(x) for x in part2]
 print("part2:", max(part2))
