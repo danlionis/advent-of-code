@@ -1,5 +1,6 @@
 import sys
 import time
+from typing import Tuple
 
 data = sys.stdin.read().splitlines()
 
@@ -32,16 +33,23 @@ def visualize(knots):
     print(chr(27) + "[2J")
 
     for y in range(max_y):
-        line = ["#" if (x - (max_x // 2), y  - (max_y // 2))
+        line = ["#" if (x - (max_x // 2), y - (max_y // 2))
                 in knots else "." for x in range(max_x)]
         print("".join(line))
+
+
+def get_step_from_delta(x):
+    if x == 0:
+        return 0
+
+    return 1 if x > 0 else -1
 
 
 def sign(x):
     return 1 if x >= 0 else -1
 
 
-def update_tail(head, tail):
+def update_tail(head: Tuple[int, int], tail: Tuple[int, int]):
     if head == tail:
         return tail
 
@@ -51,23 +59,16 @@ def update_tail(head, tail):
     delta_x = head_x - tail_x
     delta_y = head_y - tail_y
 
-    match (abs(delta_x), abs(delta_y)):
-        case 0, 0: return tail
-        case 1, 0: return tail
-        case 0, 1: return tail
-        case 1, 1: return tail
-        case 2, 0: return (tail_x + sign(delta_x), tail_y)
-        case 0, 2: return (tail_x, tail_y + sign(delta_y))
-        case 2, 1: return (tail_x + sign(delta_x), tail_y + sign(delta_y))
-        case 1, 2: return (tail_x + sign(delta_x), tail_y + sign(delta_y))
-        case 2, 2: return (tail_x + sign(delta_x), tail_y + sign(delta_y))
+    if max(abs(delta_x), abs(delta_y)) <= 1:
+        return tail
 
-    print("invalid state", head, tail, delta_x, delta_y)
-    return tail
+    return (tail_x + get_step_from_delta(delta_x), tail_y + get_step_from_delta(delta_y))
 
-def solve(moves, knot_amount: int):
+
+def solve(moves, knot_amount=10):
     knots = [(0, 0)] * knot_amount
-    res = set()
+    part1 = set()
+    part2 = set()
     for direction, amount in moves:
         for i in range(amount):
             ds = move_deltas[direction]
@@ -79,9 +80,12 @@ def solve(moves, knot_amount: int):
                 tmp_tail = knots[i + 1]
                 knots[i + 1] = update_tail(tmp_head, tmp_tail)
 
-            visualize(knots)
-            res.add(knots[-1])
-    return len(res)
+            # visualize(knots)
+            part1.add(knots[1])
+            part2.add(knots[-1])
+    return len(part1), len(part2)
 
-print("part1:", solve(moves, 2))
-print("part2:", solve(moves, 10))
+
+part1, part2 = solve(moves)
+print("part1:", part1)
+print("part2:", part2)

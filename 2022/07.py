@@ -16,9 +16,6 @@ for l in lines:
         case "dir", _: pass
         case size, name:  directories["/".join(current_dir)].append(int(size))
 
-for k, v in directories.items():
-    print(k, v)
-
 
 part1 = defaultdict(lambda: 0)
 
