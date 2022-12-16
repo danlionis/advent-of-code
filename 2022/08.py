@@ -1,5 +1,4 @@
 import sys
-import functools
 
 trees = [[int(tree) for tree in treeline]
          for treeline in sys.stdin.read().strip().split("\n")]
