@@ -63,7 +63,7 @@ def possible_points(scanner_col, scanner_row, distance):
 
 part2 = None
 for x, y in sensors:
-    print(x, y, sensors[(x, y)], end="\r")
+    # print(x, y, sensors[(x, y)], end="\r")
 
     if part2 != None:
         break

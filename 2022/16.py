@@ -1,6 +1,5 @@
 import sys
 
-
 def process_line(line):
     parts = line.split()
     valve = parts[1]
@@ -10,9 +9,9 @@ def process_line(line):
 
 
 data = dict(map(process_line, sys.stdin.read().strip().splitlines()))
-print(data)
+# print(data)
 
-print(sorted([(k, v) for k, v in data.items() if v["f"] > 0]))
+# print(sorted([(k, v) for k, v in data.items() if v["f"] > 0]))
 
 opened = set()
 current_valve = "AA"

@@ -1,6 +1,5 @@
 import sys
 from collections import defaultdict
-import time
 
 data = sys.stdin.read().strip().splitlines()
 

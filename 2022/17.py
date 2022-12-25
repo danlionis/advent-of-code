@@ -2,7 +2,6 @@ import sys
 import math
 
 winds = [1 if w == ">" else -1 for w in list(sys.stdin.read().strip())]
-# print(winds)
 
 
 def get_rock_parts(x, y, shape):
@@ -42,19 +41,20 @@ wind_index = 0
 pos = (0, 0)
 part1 = 0
 
-print(len(rock_types), len(winds), math.lcm(len(rock_types), len(winds)))
+# print(len(rock_types), len(winds), math.lcm(len(rock_types), len(winds)))
 
 for rock_num in range(1000000000000):
-    print(rock_num, wind_index, rock_num % len(rock_types), wind_index % len(winds))
+    # print(rock_num, wind_index, rock_num % len(rock_types), wind_index % len(winds))
     if rock_num == 2022:
         part1 = max_y + 1
+        break
     x, y = 2, max_y + 4
     shape = rock_types[rock_num % len(rock_types)]
     # print("new=", shape, "pos=", x, y)
 
     while True:
-        if rock_num % len(rock_types) == 0 and wind_index % len(winds) == 0:
-            print(rock_num, wind_index)
+        # if rock_num % len(rock_types) == 0 and wind_index % len(winds) == 0:
+        #     print(rock_num, wind_index)
 
         dx = winds[wind_index % len(winds)]
         wind_index += 1
