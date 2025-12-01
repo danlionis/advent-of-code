@@ -1,4 +1,5 @@
 import sys
+import itertools
 
 def process_line(line):
     parts = line.split()
@@ -10,7 +11,7 @@ def process_line(line):
 
 valves = dict(map(process_line, sys.stdin.read().strip().splitlines()))
 
-max_score = 0
+part1 = 0
 
 def not_opened(opened):
     return [x for x in valves.keys() if x not in opened]
@@ -22,19 +23,19 @@ def best_possible_score(opened, minute):
     return sum([a * b for a, b in zip(flowrates, range(minute, 0, -2))])
 
 
-def move(valve: str, minute: int, score: int, opened: list):
+def part1_move(valve: str, minute: int, score: int, opened: list):
     # print(31 - minute, valve, opened)
-    global max_score
+    global part1
     flow = valves[valve]["f"]
     tunnels = valves[valve]["t"]
 
 
     if minute <= 0 or len(opened) == len(valves):
-        # print(opened, score, max_score)
-        max_score = max(score, max_score)
+        if score > part1: print(opened, score)
+        part1 = max(score, part1)
         return
 
-    if best_possible_score(opened, minute) + score <= max_score:
+    if best_possible_score(opened, minute) + score <= part1:
         # print("not feasable", minute, opened)
         return
 
@@ -45,10 +46,10 @@ def move(valve: str, minute: int, score: int, opened: list):
         new_opened = opened + [valve]
     
         for tunnel in tunnels:
-            move(tunnel, minute - 2, new_score, new_opened)
+            part1_move(tunnel, minute - 2, new_score, new_opened)
 
     for tunnel in tunnels:
-        move(tunnel, minute - 1, score, opened)
+        part1_move(tunnel, minute - 1, score, opened)
 
-move("AA", 30, 0, [])
-print("part1:", max_score)
+part1_move("AA", 30, 0, [])
+print("part1:", part1)

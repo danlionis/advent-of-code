@@ -6,46 +6,65 @@ board = board.splitlines()
 # print(board[0])
 # print(instr)
 
-row, col = 0,  board[0].index(".")
+row, col = 0, board[0].index(".")
 print(col, row)
+
 
 def turn(direction, turn):
     match turn, direction:
-        case "R", (1, 0): return (0, 1)
-        case "R", (0, 1): return (-1, 0)
-        case "R", (-1, 0): return (0, -1)
-        case "R", (0, -1): return (1, 0)
-        case "L", (1, 0): return (0, -1)
-        case "L", (0, 1): return (1, 0)
-        case "L", (-1, 0): return (0, 1)
-        case "L", (0, -1): return (-1, 0)
+        case "R", (1, 0):
+            return (0, 1)
+        case "R", (0, 1):
+            return (-1, 0)
+        case "R", (-1, 0):
+            return (0, -1)
+        case "R", (0, -1):
+            return (1, 0)
+        case "L", (1, 0):
+            return (0, -1)
+        case "L", (0, 1):
+            return (1, 0)
+        case "L", (-1, 0):
+            return (0, 1)
+        case "L", (0, -1):
+            return (-1, 0)
     return dir
+
 
 def facing(dir):
     match dir:
-        case (1, 0): return 0
-        case (0, 1): return 1
-        case (-1, 0): return 2
-        case (0, -1): return 3
+        case (1, 0):
+            return 0
+        case (0, 1):
+            return 1
+        case (-1, 0):
+            return 2
+        case (0, -1):
+            return 3
     return 0
+
 
 def vis_dir(dir):
     match dir:
-        case (1, 0): return ">" 
-        case (0, 1): return "v" 
-        case (-1, 0): return "<" 
-        case (0, -1): return "^" 
-    return "X" 
+        case (1, 0):
+            return ">"
+        case (0, 1):
+            return "v"
+        case (-1, 0):
+            return "<"
+        case (0, -1):
+            return "^"
+    return "X"
+
 
 def board_get(row, col):
     try:
-        return board[row % mod_y][col % mod_x] 
+        return board[row % mod_y][col % mod_x]
     except:
         return " "
 
 
-
-dir = (1, 0) # r -> (0, 1) -> r -> (-1, 0) -> r -> (0, -1)
+dir = (1, 0)  # r -> (0, 1) -> r -> (-1, 0) -> r -> (0, -1)
 pos = (col, row)
 
 mod_x = max(len(x) for x in board)
@@ -92,8 +111,6 @@ for i in range(len(moves)):
         dir = turn(dir, t)
     except:
         break
-
-
 
     print(pos)
 

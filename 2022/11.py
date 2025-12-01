@@ -1,8 +1,9 @@
 import sys
 
 
-monkes_data = [list(map(str.strip, monke.splitlines()))
-               for monke in sys.stdin.read().split("\n\n")]
+monkes_data = [
+    list(map(str.strip, monke.splitlines())) for monke in sys.stdin.read().split("\n\n")
+]
 
 
 def product(l):
@@ -25,10 +26,14 @@ def parse_monke(monke_str):
 
 def apply_operation(old, operation):
     match operation:
-        case "old", "+", "old": return old + old
-        case "old", "*", "old": return old * old
-        case "old", "+", d: return old + int(d)
-        case "old", "*", d: return old * int(d)
+        case "old", "+", "old":
+            return old + old
+        case "old", "*", "old":
+            return old * old
+        case "old", "+", d:
+            return old + int(d)
+        case "old", "*", d:
+            return old * int(d)
 
     return 0  # unreachable
 

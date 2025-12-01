@@ -2,20 +2,21 @@ import sys
 import time
 from typing import Tuple
 
+x = 5
+
 data = sys.stdin.read().splitlines()
 
-# data = """R 4
-# U 4
-# L 3
-# D 1
-# R 4
-# D 1
-# L 5
-# R 2
-# """.splitlines()
+data = """R 4
+U 4
+L 3
+D 1
+R 4
+D 1
+L 5
+R 2
+""".splitlines()
 
-moves = [(direction, int(steps))
-         for direction, steps in map(str.split, data)]
+moves = [(direction, int(steps)) for direction, steps in map(str.split, data)]
 
 position_head = (0, 0)
 position_tail = (0, 0)
@@ -24,7 +25,7 @@ move_deltas = {"U": (0, 1), "R": (1, 0), "D": (0, -1), "L": (-1, 0)}
 
 
 def visualize(knots):
-    time.sleep(1/100)
+    time.sleep(1 / 100)
     max_x = 100
     max_y = 60
 
@@ -33,8 +34,10 @@ def visualize(knots):
     print(chr(27) + "[2J")
 
     for y in range(max_y):
-        line = ["#" if (x - (max_x // 2), y - (max_y // 2))
-                in knots else "." for x in range(max_x)]
+        line = [
+            "#" if (x - (max_x // 2), y - (max_y // 2)) in knots else "."
+            for x in range(max_x)
+        ]
         print("".join(line))
 
 
@@ -62,7 +65,10 @@ def update_tail(head: Tuple[int, int], tail: Tuple[int, int]):
     if max(abs(delta_x), abs(delta_y)) <= 1:
         return tail
 
-    return (tail_x + get_step_from_delta(delta_x), tail_y + get_step_from_delta(delta_y))
+    return (
+        tail_x + get_step_from_delta(delta_x),
+        tail_y + get_step_from_delta(delta_y),
+    )
 
 
 def solve(moves, knot_amount=10):
