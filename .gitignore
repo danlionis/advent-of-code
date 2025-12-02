@@ -1,1 +1,5 @@
 venv
+2025/data/examples
+2025/flamegraph.svg
+2025/perf.data
+2025/perf.data.old

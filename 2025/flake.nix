@@ -31,6 +31,7 @@
         pkgs.mkShell {
           buildInputs = with pkgs; [
             rust
+            cargo-flamegraph
             aoc-cli
           ];
         };
