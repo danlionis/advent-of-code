@@ -1,9 +1,12 @@
-use std::{collections::HashSet, convert::identity};
+use rustc_hash::FxHashSet;
+use std::convert::identity;
+
+type HashSet<T> = FxHashSet<T>;
 
 advent_of_code::solution!(4);
 
 fn parse_input(input: &str) -> HashSet<(i64, i64)> {
-    let mut res = HashSet::with_capacity(input.len());
+    let mut res = HashSet::default();
     let mut y = 0;
     let mut x = 0;
     for chr in input.bytes() {
