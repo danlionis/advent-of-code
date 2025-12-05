@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 pub mod template;
 
 // Use this file to add helper functions and additional modules.
@@ -24,6 +26,21 @@ where
         BoundedGrid {
             data: data.into_boxed_slice(),
             active: Vec::with_capacity(capacity),
+            width: x,
+            height: y,
+            stale: false,
+        }
+    }
+
+    pub fn new_with_default(x: usize, y: usize, default: T) -> Self {
+        let capacity = x * y;
+
+        let data = vec![Some(default); capacity];
+        let active = (0..data.len()).collect();
+
+        BoundedGrid {
+            data: data.into_boxed_slice(),
+            active,
             width: x,
             height: y,
             stale: false,
@@ -112,6 +129,19 @@ impl<T> BoundedGrid<T> {
 
     pub fn is_empty(&self) -> bool {
         self.active.is_empty()
+    }
+}
+
+pub fn print_grid<T: Display + Default + Clone>(grid: &BoundedGrid<T>, empty: &str) {
+    println!();
+    for y in 0..grid.height {
+        for x in 0..grid.width {
+            match grid.get(x, y).cloned() {
+                Some(v) => print!("{}", v),
+                None => print!("{}", empty),
+            }
+        }
+        println!();
     }
 }
 

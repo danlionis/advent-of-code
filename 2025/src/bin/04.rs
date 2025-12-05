@@ -4,6 +4,7 @@ use rustc_hash::FxHashSet;
 advent_of_code::solution!(4);
 
 type HashSet<T> = FxHashSet<T>;
+
 const DELTAS: &[(isize, isize)] = &[
     (-1isize, -1isize),
     (0, -1),
@@ -21,7 +22,7 @@ fn parse_input(input: &str) -> BoundedGrid<bool> {
     let first_newline = bytes.iter().position(|&e| e == b'\n').unwrap();
 
     let width = first_newline;
-    let height = (bytes.len() + 1) / first_newline;
+    let height = (bytes.len()) / first_newline;
 
     let mut grid = BoundedGrid::new(width, height);
 
@@ -46,10 +47,7 @@ fn parse_input(input: &str) -> BoundedGrid<bool> {
 
 fn num_neighbors(grid: &BoundedGrid<bool>) -> BoundedGrid<usize> {
     let mut res = BoundedGrid::new(grid.width, grid.height);
-    for (x, y, set) in grid.positions() {
-        if !set {
-            continue;
-        }
+    for (x, y, _) in grid.positions().filter(|(_, _, set)| **set) {
         let mut count = 0;
         for (dx, dy) in deltas((x, y), DELTAS) {
             if let Some(true) = grid.get(dx, dy) {
@@ -114,46 +112,59 @@ pub fn precompute_deltas(
 }
 
 pub fn part_two(input: &str) -> Option<usize> {
-    // for _ in 0..100 {
-    //     part_two_opt2(input);
-    // }
-    // return None;
     part_two_opt2(input)
 }
 
 pub fn part_two_opt2(input: &str) -> Option<usize> {
     let grid = parse_input(input);
     let mut neighbors = num_neighbors(&grid);
-    let rolls_total = neighbors.iter().filter(|&&e| e > 0).count();
+    let rolls_total = neighbors.len();
 
-    let mut to_remove = Vec::with_capacity(rolls_total);
+    // let mut to_remove = Vec::with_capacity(rolls_total);
+    let mut to_remove = neighbors
+        .positions()
+        .filter_map(|(x, y, num)| if *num < 4 { Some((x, y)) } else { None })
+        .collect::<HashSet<_>>();
+
+    let mut tmp = HashSet::default();
+    // dbg!(&to_remove);
 
     loop {
-        for (x, y, &num) in neighbors.positions() {
-            if num < 4 && num > 0 {
-                to_remove.push((x, y));
-            }
-        }
-
-        // dbg!(to_remove.len());
+        // print_grid(&neighbors, ".");
         if to_remove.is_empty() {
             break;
         }
 
-        for (x, y) in to_remove.drain(..) {
-            neighbors.set(x, y, 0);
+        // neighbors.cleanup();
+        // println!("\nremoving {} rolls ({})", to_remove.len(), neighbors.len());
+        //
+        // let mut removing = BoundedGrid::new(grid.width, grid.height);
+        // for (x, y) in to_remove.iter() {
+        //     removing.set(*x, *y, "x");
+        // }
+        // print_grid(&removing, ".");
+
+        for (x, y) in to_remove.drain() {
+            neighbors.remove(x, y);
+            tmp.remove(&(x, y));
 
             for (dx, dy) in deltas((x, y), DELTAS) {
-                if let Some(&num) = neighbors.get(dx, dy)
-                    && num > 0
-                {
-                    neighbors.set(dx, dy, num - 1);
+                if let Some(v) = neighbors.get_mut(dx, dy) {
+                    *v -= 1;
+
+                    if *v < 4 {
+                        tmp.insert((dx, dy));
+                    }
                 }
             }
         }
+
+        std::mem::swap(&mut to_remove, &mut tmp);
+        tmp.clear();
     }
 
-    let rolls_end = neighbors.iter().filter(|&&e| e > 0).count();
+    neighbors.cleanup();
+    let rolls_end = neighbors.len();
 
     Some(rolls_total - rolls_end)
 }
@@ -291,9 +302,7 @@ mod tests {
 
     #[test]
     fn test_parsing() {
-        let input = r#".@@.
-@@..
-..@@"#;
+        let input = ".@@.\n@@..\n..@@";
 
         let expected =
             std::collections::HashSet::from_iter([(1, 0), (2, 0), (0, 1), (1, 1), (2, 2), (3, 2)]);
