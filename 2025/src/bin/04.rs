@@ -1,18 +1,36 @@
+use advent_of_code::BoundedGrid;
 use rustc_hash::FxHashSet;
-use std::convert::identity;
-
-type HashSet<T> = FxHashSet<T>;
 
 advent_of_code::solution!(4);
 
-fn parse_input(input: &str) -> HashSet<(i64, i64)> {
-    let mut res = HashSet::default();
+type HashSet<T> = FxHashSet<T>;
+const DELTAS: &[(isize, isize)] = &[
+    (-1isize, -1isize),
+    (0, -1),
+    (1, -1),
+    (-1, 0),
+    (1, 0),
+    (-1, 1),
+    (0, 1),
+    (1, 1),
+];
+
+fn parse_input(input: &str) -> BoundedGrid<bool> {
+    let bytes = input.trim().as_bytes();
+
+    let first_newline = bytes.iter().position(|&e| e == b'\n').unwrap();
+
+    let width = first_newline;
+    let height = (bytes.len() + 1) / first_newline;
+
+    let mut grid = BoundedGrid::new(width, height);
+
     let mut y = 0;
     let mut x = 0;
     for chr in input.bytes() {
         match chr {
             b'@' => {
-                res.insert((x, y));
+                grid.set(x, y, true);
                 x += 1;
             }
             b'.' => x += 1,
@@ -23,54 +41,48 @@ fn parse_input(input: &str) -> HashSet<(i64, i64)> {
             _ => {}
         };
     }
+    grid
+}
+
+fn num_neighbors(grid: &BoundedGrid<bool>) -> BoundedGrid<usize> {
+    let mut res = BoundedGrid::new(grid.width, grid.height);
+    for (x, y, set) in grid.positions() {
+        if !set {
+            continue;
+        }
+        let mut count = 0;
+        for (dx, dy) in deltas((x, y), DELTAS) {
+            if let Some(true) = grid.get(dx, dy) {
+                count += 1;
+            }
+        }
+        res.set(x, y, count);
+    }
+
     res
 }
 
-struct Deltas {
-    point: (i64, i64),
-    delta: usize,
-}
+#[inline(never)]
+fn deltas(pos: (usize, usize), ds: &[(isize, isize)]) -> impl Iterator<Item = (usize, usize)> {
+    ds.iter().filter_map(move |(dx, dy)| {
+        let x = pos.0.checked_add_signed(*dx)?;
+        let y = pos.1.checked_add_signed(*dy)?;
 
-impl Iterator for Deltas {
-    type Item = (i64, i64);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let ds = &[
-            (-1i64, -1i64),
-            (0, -1),
-            (1, -1),
-            (-1, 0),
-            (1, 0),
-            (-1, 1),
-            (0, 1),
-            (1, 1),
-        ];
-
-        if self.delta >= ds.len() {
-            return None;
-        }
-
-        let delta = ds[self.delta];
-        self.delta += 1;
-        Some((self.point.0 + delta.0, self.point.1 + delta.1))
-    }
-}
-
-fn deltas(pos: (i64, i64)) -> Deltas {
-    Deltas {
-        point: pos,
-        delta: 0,
-    }
+        Some((x, y))
+    })
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
     let grid = parse_input(input);
 
     let mut res = 0;
-    for pos in grid.iter() {
+    for pos in grid
+        .positions()
+        .filter_map(|(x, y, val)| if *val { Some((x, y)) } else { None })
+    {
         let mut count = 0;
-        for delta in deltas(*pos) {
-            if grid.contains(&delta) {
+        for (dx, dy) in deltas(pos, DELTAS) {
+            if let Some(true) = grid.get(dx, dy) {
                 count += 1;
             }
         }
@@ -82,83 +94,170 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(res)
 }
 
-pub fn part_two(input: &str) -> Option<usize> {
-    let mut grid = parse_input(input);
-    let rolls_total = grid.len();
+pub fn precompute_deltas(
+    grid: &BoundedGrid<bool>,
+    ds: &[(isize, isize)],
+) -> BoundedGrid<Box<[(usize, usize)]>> {
+    let mut res = BoundedGrid::new(grid.width, grid.height);
 
-    let mut check = grid.clone();
-    let mut to_remove = Vec::with_capacity(grid.len());
+    for (x, y) in grid
+        .positions()
+        .filter_map(|(x, y, set)| if *set { Some((x, y)) } else { None })
+    {
+        let mut v = Vec::with_capacity(ds.len());
+        v.extend(deltas((x, y), ds).filter(|&(x, y)| x < grid.width && y < grid.height));
+
+        res.set(x, y, v.into_boxed_slice());
+    }
+
+    res
+}
+
+pub fn part_two(input: &str) -> Option<usize> {
+    // for _ in 0..100 {
+    //     part_two_opt2(input);
+    // }
+    // return None;
+    part_two_opt2(input)
+}
+
+pub fn part_two_opt2(input: &str) -> Option<usize> {
+    let grid = parse_input(input);
+    let mut neighbors = num_neighbors(&grid);
+    let rolls_total = neighbors.iter().filter(|&&e| e > 0).count();
+
+    let mut to_remove = Vec::with_capacity(rolls_total);
 
     loop {
-        for pos in check.drain() {
-            let mut count = 0;
-            for delta in deltas(pos) {
-                if grid.contains(&delta) {
-                    count += 1;
-                }
-            }
-            if count < 4 {
-                to_remove.push(pos);
+        for (x, y, &num) in neighbors.positions() {
+            if num < 4 && num > 0 {
+                to_remove.push((x, y));
             }
         }
 
+        // dbg!(to_remove.len());
         if to_remove.is_empty() {
             break;
         }
 
-        for remove in to_remove.drain(..) {
-            grid.remove(&remove);
+        for (x, y) in to_remove.drain(..) {
+            neighbors.set(x, y, 0);
 
-            for delta in deltas(remove) {
-                if grid.contains(&delta) {
-                    check.insert(delta);
+            for (dx, dy) in deltas((x, y), DELTAS) {
+                if let Some(&num) = neighbors.get(dx, dy)
+                    && num > 0
+                {
+                    neighbors.set(dx, dy, num - 1);
                 }
             }
         }
     }
 
-    Some(rolls_total - grid.len())
+    let rolls_end = neighbors.iter().filter(|&&e| e > 0).count();
+
+    Some(rolls_total - rolls_end)
 }
 
-pub fn part_two_old(input: &str) -> Option<usize> {
+pub fn part_two_opt(input: &str) -> Option<usize> {
     let mut grid = parse_input(input);
+    let rolls_total = grid.iter().filter(|&&e| e).count();
 
-    let rolls_total = grid.len();
+    // let ds = precompute_deltas(&grid, DELTAS);
 
-    let deltas = &[
-        (-1i64, -1i64),
-        (0, -1),
-        (1, -1),
-        (-1, 0),
-        (1, 0),
-        (-1, 1),
-        (0, 1),
-        (1, 1),
-    ];
+    // let mut check = Vec::
+    let mut check = grid
+        .positions()
+        .filter_map(|(x, y, set)| if *set { Some((x, y)) } else { None })
+        .collect::<HashSet<_>>();
+    // let mut check = grid.clone();
+    let mut to_remove = Vec::with_capacity(rolls_total);
 
-    let mut res = rolls_total;
-    let mut old_res = 0;
+    loop {
+        // println!(
+        //     "{} / {} ",
+        //     check
+        //         .positions()
+        //         .filter_map(|(x, y, set)| if *set { Some((x, y)) } else { None })
+        //         .count(),
+        //     check.data.len(),
+        // );
+        'check: for &(x, y) in check.iter() {
+            let mut count = 0;
+            for (dx, dy) in deltas((x, y), DELTAS) {
+                if let Some(true) = grid.get(dx, dy) {
+                    count += 1;
+                    if count >= 4 {
+                        continue 'check;
+                    }
+                }
+            }
+            to_remove.push((x, y));
+        }
 
-    while res != old_res {
-        let grid_copied = grid.clone();
+        check.clear();
 
-        grid.retain(|pos| {
-            let count = deltas
-                .iter()
-                .map(|delta| (pos.0 + delta.0, pos.1 + delta.1))
-                .map(|p| grid_copied.contains(&p))
-                .filter(|e| identity(*e))
-                .count();
+        // dbg!(to_remove.len());
+        if to_remove.is_empty() {
+            break;
+        }
 
-            count >= 4
-        });
+        for (x, y) in to_remove.drain(..) {
+            grid.set(x, y, false);
 
-        old_res = res;
-        res = grid.len();
+            // for &(dx, dy) in ds.get_unchecked(x, y) {
+            //     if *grid.get_unchecked(dx, dy) {
+            for (dx, dy) in deltas((x, y), DELTAS) {
+                if let Some(true) = grid.get(dx, dy) {
+                    check.insert((dx, dy));
+                }
+            }
+        }
     }
 
-    Some(rolls_total - res)
+    let rolls_end = grid.iter().filter(|&&e| e).count();
+
+    Some(rolls_total - rolls_end)
 }
+
+// pub fn part_two_old(input: &str) -> Option<usize> {
+//     let mut grid = parse_input(input);
+//
+//     let rolls_total = grid.len();
+//
+//     let deltas = &[
+//         (-1isize, -1isize),
+//         (0, -1),
+//         (1, -1),
+//         (-1, 0),
+//         (1, 0),
+//         (-1, 1),
+//         (0, 1),
+//         (1, 1),
+//     ];
+//
+//     let mut res = rolls_total;
+//     let mut old_res = 0;
+//
+//     while res != old_res {
+//         let grid_copied = grid.clone();
+//
+//         grid.retain(|pos| {
+//             let count = deltas
+//                 .iter()
+//                 .map(|delta| (pos.0 + delta.0, pos.1 + delta.1))
+//                 .map(|p| grid_copied.contains(&p))
+//                 .filter(|e| identity(*e))
+//                 .count();
+//
+//             count >= 4
+//         });
+//
+//         old_res = res;
+//         res = grid.len();
+//     }
+//
+//     Some(rolls_total - res)
+// }
 
 #[cfg(test)]
 mod tests {
@@ -166,17 +265,23 @@ mod tests {
 
     #[test]
     fn test_deltas() {
-        let mut ds = deltas((0, 0));
+        let mut ds = deltas((0, 0), DELTAS);
+        let expected = &[(1, 0), (0, 1), (1, 1)];
 
+        for d in expected {
+            assert_eq!(ds.next(), Some(*d));
+        }
+
+        let mut ds = deltas((1, 1), DELTAS);
         let expected = &[
-            (-1, -1),
-            (0, -1),
-            (1, -1),
-            (-1, 0),
+            (0, 0),
             (1, 0),
-            (-1, 1),
+            (2, 0),
             (0, 1),
-            (1, 1),
+            (2, 1),
+            (0, 2),
+            (1, 2),
+            (2, 2),
         ];
 
         for d in expected {
@@ -190,9 +295,17 @@ mod tests {
 @@..
 ..@@"#;
 
-        let expected = HashSet::from_iter([(1i64, 0i64), (2, 0), (0, 1), (1, 1), (2, 2), (3, 2)]);
+        let expected =
+            std::collections::HashSet::from_iter([(1, 0), (2, 0), (0, 1), (1, 1), (2, 2), (3, 2)]);
 
-        assert_eq!(parse_input(input), expected);
+        let parsed = parse_input(input);
+
+        let set = parsed
+            .positions()
+            .filter_map(|(x, y, val)| if *val { Some((x, y)) } else { None })
+            .collect::<std::collections::HashSet<_>>();
+
+        assert_eq!(set, expected);
     }
 
     #[test]
