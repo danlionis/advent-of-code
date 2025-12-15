@@ -132,7 +132,7 @@ impl<T> BoundedGrid<T> {
     }
 }
 
-pub fn print_grid<T: Display + Default + Clone>(grid: &BoundedGrid<T>, empty: &str) {
+pub fn print_grid<T: Display + Clone>(grid: &BoundedGrid<T>, empty: &str) {
     println!();
     for y in 0..grid.height {
         for x in 0..grid.width {
